@@ -1,3 +1,4 @@
+import 'package:cached_network_image/cached_network_image.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/src/widgets/container.dart';
 import 'package:flutter/src/widgets/framework.dart';
@@ -56,7 +57,7 @@ class _MoviePageState extends State<MoviePage> {
             colorFilter: ColorFilter.mode(
                 Colors.black.withOpacity(1), BlendMode.dstATop),
             opacity: 0.3,
-            image: NetworkImage(
+            image: CachedNetworkImageProvider(
                 "https://image.tmdb.org/t/p/original${widget.result.backdropPath}"),
             fit: BoxFit.cover),
       ),
@@ -76,8 +77,9 @@ class _MoviePageState extends State<MoviePage> {
                   children: [
                     Expanded(
                       flex: 4,
-                      child: Image.network(
-                          "https://image.tmdb.org/t/p/original${widget.result.posterPath}"),
+                      child: CachedNetworkImage(
+                          imageUrl:
+                              "https://image.tmdb.org/t/p/original${widget.result.posterPath}"),
                     ),
                     const SizedBox(width: 10),
                     Expanded(

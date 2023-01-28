@@ -1,10 +1,5 @@
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:firebase_auth/firebase_auth.dart';
-import 'package:flutter/src/widgets/framework.dart';
-import 'package:flutter_bloc/flutter_bloc.dart';
-import 'package:watchlist/bloc/NavigationBloc/navigation_bloc.dart';
-import 'package:watchlist/bloc/SideNavigation/sidenavigation_bloc.dart';
-import 'package:watchlist/model/userDetails.dart';
 
 class UserDetailsUpdate {
   // BuildContext? get context => null;

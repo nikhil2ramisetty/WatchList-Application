@@ -12,9 +12,9 @@ class UserDetails {
   get AlreadyWatched => null;
 
   Map<String, dynamic> toJson() {
-    final Map<String, dynamic> data = new Map<String, dynamic>();
-    data['AlreadyWatched'] = this.alreadyWatched;
-    data['WatchLater'] = this.watchLater;
+    final Map<String, dynamic> data = <String, dynamic>{};
+    data['AlreadyWatched'] = alreadyWatched;
+    data['WatchLater'] = watchLater;
     return data;
   }
 }

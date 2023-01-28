@@ -52,8 +52,8 @@ class _DrawerWidgetState extends State<DrawerWidget> {
                   ),
             ),
             onTap: () {
-              BlocProvider.of<SideNavigationBloc>(context).add(HomePressed());
               BlocProvider.of<NavigationBloc>(context).add(HomeClicked());
+              BlocProvider.of<SideNavigationBloc>(context).add(HomePressed());
               Navigator.of(context).pop();
             },
           ),
@@ -80,8 +80,8 @@ class _DrawerWidgetState extends State<DrawerWidget> {
                   ),
             ),
             onTap: () {
-              BlocProvider.of<SideNavigationBloc>(context).add(SearchPressed());
               BlocProvider.of<NavigationBloc>(context).add(HomeClicked());
+              BlocProvider.of<SideNavigationBloc>(context).add(SearchPressed());
               Navigator.of(context).pop();
             },
           ),
@@ -108,9 +108,9 @@ class _DrawerWidgetState extends State<DrawerWidget> {
                   ),
             ),
             onTap: () {
+              BlocProvider.of<NavigationBloc>(context).add(HomeClicked());
               BlocProvider.of<SideNavigationBloc>(context)
                   .add(PopularPressed());
-              BlocProvider.of<NavigationBloc>(context).add(HomeClicked());
               Navigator.of(context).pop();
             },
           ),
@@ -137,9 +137,9 @@ class _DrawerWidgetState extends State<DrawerWidget> {
                   ),
             ),
             onTap: () {
+              BlocProvider.of<NavigationBloc>(context).add(HomeClicked());
               BlocProvider.of<SideNavigationBloc>(context)
                   .add(UpcomingPressed());
-              BlocProvider.of<NavigationBloc>(context).add(HomeClicked());
               Navigator.of(context).pop();
             },
           ),
@@ -166,9 +166,9 @@ class _DrawerWidgetState extends State<DrawerWidget> {
                   ),
             ),
             onTap: () {
+              BlocProvider.of<NavigationBloc>(context).add(HomeClicked());
               BlocProvider.of<SideNavigationBloc>(context)
                   .add(TopRatedPressed());
-              BlocProvider.of<NavigationBloc>(context).add(HomeClicked());
               Navigator.of(context).pop();
             },
           ),
