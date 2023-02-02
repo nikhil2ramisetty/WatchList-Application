@@ -39,13 +39,12 @@ class Searching {
   }
 
   Future<List<MovieResponse>> getHomePage() async {
-    String filename = "userdata.json";
     try {
       Strings str = Strings(element: "");
-      var popularMovies = Uri.parse(str.popularMovies + "1");
-      var upcomingMovies = Uri.parse(str.upcomingMovies + "1");
-      var latestMovies = Uri.parse(str.latestMovies + "1");
-      var topRatedMovies = Uri.parse(str.topRatedMovies + "1");
+      var popularMovies = Uri.parse("${str.popularMovies}1");
+      var upcomingMovies = Uri.parse("${str.upcomingMovies}1");
+      var latestMovies = Uri.parse("${str.latestMovies}1");
+      var topRatedMovies = Uri.parse("${str.topRatedMovies}1");
       http.Response res1 = await http.get(popularMovies);
       http.Response res2 = await http.get(upcomingMovies);
       http.Response res3 = await http.get(latestMovies);
@@ -89,16 +88,25 @@ class Searching {
         return [movie1, movie2, movie3, movie4];
       }
     } catch (e) {
-      var homePageJson = await ReadCache.getJson(key: "HomePage");
-      Map<String, dynamic> userMap1 = homePageJson["popularMovies"];
-      Map<String, dynamic> userMap2 = homePageJson["upcomingMovies"];
-      Map<String, dynamic> userMap3 = homePageJson["latestMovies"];
-      Map<String, dynamic> userMap4 = homePageJson["topRatedMovies"];
-      MovieResponse movie1 = MovieResponse.fromJson(userMap1);
-      MovieResponse movie2 = MovieResponse.fromJson(userMap2);
-      MovieResponse movie3 = MovieResponse.fromJson(userMap3);
-      MovieResponse movie4 = MovieResponse.fromJson(userMap4);
-      return [movie1, movie2, movie3, movie4];
+      try {
+        var homePageJson = await ReadCache.getJson(key: "HomePage");
+        Map<String, dynamic> userMap1 = homePageJson["popularMovies"];
+        Map<String, dynamic> userMap2 = homePageJson["upcomingMovies"];
+        Map<String, dynamic> userMap3 = homePageJson["latestMovies"];
+        Map<String, dynamic> userMap4 = homePageJson["topRatedMovies"];
+        MovieResponse movie1 = MovieResponse.fromJson(userMap1);
+        MovieResponse movie2 = MovieResponse.fromJson(userMap2);
+        MovieResponse movie3 = MovieResponse.fromJson(userMap3);
+        MovieResponse movie4 = MovieResponse.fromJson(userMap4);
+        return [movie1, movie2, movie3, movie4];
+      } catch (e) {
+        return [
+          MovieResponse(results: [], page: 0, totalPages: 0, totalResults: 0),
+          MovieResponse(results: [], page: 0, totalPages: 0, totalResults: 0),
+          MovieResponse(results: [], page: 0, totalPages: 0, totalResults: 0),
+          MovieResponse(results: [], page: 0, totalPages: 0, totalResults: 0)
+        ];
+      }
     }
   }
 
@@ -169,8 +177,8 @@ class Searching {
   Future<MovieResponse> getTopRatedList() async {
     try {
       Strings str = Strings(element: "");
-      var topRatedMovies1 = Uri.parse(str.topRatedMovies + "1");
-      var topRatedMovies2 = Uri.parse(str.topRatedMovies + "2");
+      var topRatedMovies1 = Uri.parse("${str.topRatedMovies}1");
+      var topRatedMovies2 = Uri.parse("${str.topRatedMovies}2");
       http.Response res1 = await http.get(topRatedMovies1);
       http.Response res2 = await http.get(topRatedMovies2);
       if (res1.statusCode == 200 && res2.statusCode == 200) {

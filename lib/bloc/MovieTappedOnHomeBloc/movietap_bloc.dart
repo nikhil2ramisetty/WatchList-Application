@@ -12,12 +12,11 @@ part 'movietap_state.dart';
 class MovietapBloc extends Bloc<MovietapEvent, MovietapState> {
   final SearchingMovie searchingMovie;
   MovietapBloc(this.searchingMovie) : super(MovietapInitial()) {
-    on<MovieTappedEvent>((event, emit) => displayMovie(event.id, emit));
+    on<MovieTappedEvent>((event, emit) async {
+      emit(MovieTappedLoading());
+      Result res = await searchingMovie.getSearchResults(event.id);
+      emit(MovieTappedLoaded(movie: res));
+    });
     on<MovieInitalComeBack>((event, emit) => emit(MovietapInitial()));
-  }
-  Future<void> displayMovie(int id, Emitter<MovietapState> emit) async {
-    emit(MovieTappedLoading());
-    Result res = await searchingMovie.getSearchResults(id);
-    emit(MovieTappedLoaded(movie: res));
   }
 }

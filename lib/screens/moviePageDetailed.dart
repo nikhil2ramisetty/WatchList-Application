@@ -6,6 +6,7 @@ import 'package:flutter/widgets.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:watchlist/bloc/MovieTappedOnHomeBloc/movietap_bloc.dart';
 import 'package:watchlist/bloc/NavigationBloc/navigation_bloc.dart';
+import 'package:watchlist/bloc/SideNavigation/sidenavigation_bloc.dart';
 import 'package:watchlist/services/user_details_update.dart';
 
 import '../model/movie_response.dart';
@@ -20,22 +21,30 @@ class Movie extends StatefulWidget {
 class _MovieState extends State<Movie> {
   @override
   Widget build(BuildContext context) {
-    return BlocBuilder<MovietapBloc, MovietapState>(
-      builder: (context, state) {
-        if (state is MovieTappedLoading) {
-          return Container(
-            decoration: BoxDecoration(color: Color.fromARGB(255, 67, 23, 80)),
-            child: const Center(
-              child: SizedBox(
-                  width: 50, height: 50, child: CircularProgressIndicator()),
-            ),
-          );
-        } else if (state is MovieTappedLoaded) {
-          return MoviePage(result: state.movie);
-        } else {
-          return Container();
-        }
+    return WillPopScope(
+      onWillPop: () async {
+        BlocProvider.of<NavigationBloc>(context).add(HomeClicked());
+        BlocProvider.of<SideNavigationBloc>(context).add(HomePressed());
+        return false;
       },
+      child: BlocBuilder<MovietapBloc, MovietapState>(
+        builder: (context, state) {
+          if (state is MovieTappedLoading) {
+            return Container(
+              decoration:
+                  const BoxDecoration(color: Color.fromARGB(255, 67, 23, 80)),
+              child: const Center(
+                child: SizedBox(
+                    width: 50, height: 50, child: CircularProgressIndicator()),
+              ),
+            );
+          } else if (state is MovieTappedLoaded) {
+            return MoviePage(result: state.movie);
+          } else {
+            return Container();
+          }
+        },
+      ),
     );
   }
 }
@@ -174,7 +183,7 @@ class _MoviePageState extends State<MoviePage> {
             DecoratedBox(
               decoration: BoxDecoration(
                   borderRadius: BorderRadius.circular(10),
-                  color: Color.fromARGB(223, 70, 69, 69)),
+                  color: const Color.fromARGB(223, 70, 69, 69)),
               child: Padding(
                 padding: const EdgeInsets.all(15),
                 child: Column(

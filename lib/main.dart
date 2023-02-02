@@ -1,5 +1,6 @@
 import 'dart:async';
 import 'package:cache_manager/cache_manager.dart';
+import 'package:cached_network_image/cached_network_image.dart';
 import 'package:connectivity_plus/connectivity_plus.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/material.dart';
@@ -13,6 +14,7 @@ import 'package:watchlist/screens/AccountPage/account.dart';
 import 'package:watchlist/screens/HomePage/home.dart';
 import 'package:watchlist/screens/SideMenu.dart';
 import 'package:watchlist/screens/MoviesPage/movies.dart';
+// ignore: depend_on_referenced_packages
 import 'package:firebase_core/firebase_core.dart';
 import 'package:watchlist/services/getmoviedetails.dart';
 import 'bloc/MovieTappedOnHomeBloc/movietap_bloc.dart';
@@ -67,6 +69,13 @@ class _MyHomePageState extends State<MyHomePage> {
   Map _source = {ConnectivityResult.none: false};
   final NetworkConnectivity _networkConnectivity = NetworkConnectivity.instance;
   String string = '';
+
+  @override
+  void dispose() {
+    super.dispose();
+    _networkConnectivity.disposeStream();
+  }
+
   @override
   void initState() {
     super.initState();
@@ -89,8 +98,9 @@ class _MyHomePageState extends State<MyHomePage> {
         default:
           string = 'Offline';
       }
-      if (string != "Offline") {
+      if (string == "Mobile: Online" || string == "WiFi: Online") {
         BlocProvider.of<InternetBloc>(context).add(InternetOn());
+        DeleteCache.deleteKey("NoInternet");
         var currNavigationState = context.read<NavigationBloc>().state;
         if (currNavigationState is NavigationHome) {
           BlocProvider.of<NavigationBloc>(context).add(HomeClicked());
@@ -128,70 +138,123 @@ class _MyHomePageState extends State<MyHomePage> {
     });
   }
 
-  int currentIndex = 0;
   @override
   Widget build(BuildContext context) {
     Timer.periodic(const Duration(seconds: 4), (Timer t) async {
       var internetStatus = context.read<InternetBloc>().state;
       int currTime = DateTime.now().minute;
+      bool isOnline = false;
+      // try {
+      //   var result = await InternetAddress.lookup("example.com")
+      //       .timeout(const Duration(seconds: 4));
+      //   isOnline = result.isNotEmpty && result[0].rawAddress.isNotEmpty;
+      // } on SocketException catch (_) {
+      //   isOnline = false;
+      // }
       if (internetStatus is NoInternet) {
+        // if (!isOnline) {
         int lastInternetOff = await ReadCache.getInt(key: "NoInternet");
         if (currTime - lastInternetOff > 2) {
           FirebaseAuth.instance.signOut();
         }
+        // } else {
+        //   BlocProvider.of<InternetBloc>(context).add(InternetOn());
+        //   BlocProvider.of<SideNavigationBloc>(context).add(HomePressed());
+        // }
       }
     });
 
-    return Scaffold(
-      resizeToAvoidBottomInset: false,
-      appBar: AppBar(title: Text(widget.title)),
-      body: BlocBuilder<NavigationBloc, NavigationState>(
-        builder: (context, state) {
-          if (state is NavigationHome) {
-            return Home(ms: widget.ms);
-          } else if (state is NavigationMovies) {
-            return const Movies();
-          } else if (state is NavigationAccount) {
-            return const Account();
-          } else {
-            throw Exception();
-          }
-        },
-      ),
-      bottomNavigationBar: BlocBuilder<NavigationBloc, NavigationState>(
-        builder: (context, state) {
-          return BottomNavigationBar(
-              selectedItemColor: Colors.purple,
-              unselectedItemColor: const Color.fromARGB(255, 252, 233, 255),
-              showSelectedLabels: false,
-              showUnselectedLabels: false,
-              backgroundColor: const Color.fromARGB(255, 0, 0, 0),
-              onTap: (value) {
-                if (value == 0) {
-                  BlocProvider.of<NavigationBloc>(context).add(HomeClicked());
-                  BlocProvider.of<SideNavigationBloc>(context)
-                      .add(HomePressed());
-                  BlocProvider.of<MovietapBloc>(context)
-                      .add(MovieInitalComeBack());
-                } else if (value == 1) {
-                  BlocProvider.of<NavigationBloc>(context).add(MoviesClicked());
-                } else if (value == 2) {
-                  BlocProvider.of<NavigationBloc>(context)
-                      .add(AccountClicked());
+    return StreamBuilder<User?>(
+        stream: FirebaseAuth.instance.authStateChanges(),
+        builder: (context, snapshot) {
+          return Scaffold(
+            resizeToAvoidBottomInset: false,
+            appBar: AppBar(
+              title: const Text("WatchList Application"),
+              leading: Builder(
+                builder: (BuildContext context) {
+                  return IconButton(
+                    icon: const Icon(Icons.menu),
+                    onPressed: () {
+                      Scaffold.of(context).openDrawer();
+                    },
+                    tooltip:
+                        MaterialLocalizations.of(context).openAppDrawerTooltip,
+                  );
+                },
+              ),
+              actions: [
+                if (snapshot.hasData)
+                  InkWell(
+                      onTap: () {
+                        BlocProvider.of<NavigationBloc>(context)
+                            .add(AccountClicked());
+                      },
+                      child: CachedNetworkImage(
+                        width: 28,
+                        errorWidget: ((context, url, error) =>
+                            const Icon(Icons.abc_outlined)),
+                        imageUrl:
+                            "https://upload.wikimedia.org/wikipedia/commons/thumb/2/2c/Default_pfp.svg/1200px-Default_pfp.svg.png",
+                      ))
+                else
+                  Container(),
+                const SizedBox(
+                  width: 20,
+                )
+              ],
+            ),
+            body: BlocBuilder<NavigationBloc, NavigationState>(
+              builder: (context, state) {
+                if (state is NavigationHome) {
+                  return Home(ms: widget.ms);
+                } else if (state is NavigationMovies) {
+                  return const Movies();
+                } else if (state is NavigationAccount) {
+                  return const Account();
+                } else {
+                  throw Exception();
                 }
               },
-              currentIndex: state.index,
-              items: const [
-                BottomNavigationBarItem(
-                    icon: Icon(Icons.home), label: "HomePage"),
-                BottomNavigationBarItem(
-                    icon: Icon(Icons.movie), label: "Movies"),
-                BottomNavigationBarItem(
-                    icon: Icon(Icons.person), label: "Account"),
-              ]);
-        },
-      ),
-      drawer: const DrawerWidget(),
-    );
+            ),
+            bottomNavigationBar: BlocBuilder<NavigationBloc, NavigationState>(
+              builder: (context, state) {
+                return BottomNavigationBar(
+                    selectedItemColor: Colors.purple,
+                    unselectedItemColor:
+                        const Color.fromARGB(255, 252, 233, 255),
+                    showSelectedLabels: false,
+                    showUnselectedLabels: false,
+                    backgroundColor: const Color.fromARGB(255, 0, 0, 0),
+                    onTap: (value) {
+                      if (value == 0) {
+                        BlocProvider.of<NavigationBloc>(context)
+                            .add(HomeClicked());
+                        BlocProvider.of<SideNavigationBloc>(context)
+                            .add(HomePressed());
+                        BlocProvider.of<MovietapBloc>(context)
+                            .add(MovieInitalComeBack());
+                      } else if (value == 1) {
+                        BlocProvider.of<NavigationBloc>(context)
+                            .add(MoviesClicked());
+                      } else if (value == 2) {
+                        BlocProvider.of<NavigationBloc>(context)
+                            .add(AccountClicked());
+                      }
+                    },
+                    currentIndex: state.index,
+                    items: const [
+                      BottomNavigationBarItem(
+                          icon: Icon(Icons.home), label: "HomePage"),
+                      BottomNavigationBarItem(
+                          icon: Icon(Icons.movie), label: "Movies"),
+                      BottomNavigationBarItem(
+                          icon: Icon(Icons.person), label: "Account"),
+                    ]);
+              },
+            ),
+            drawer: const DrawerWidget(),
+          );
+        });
   }
 }

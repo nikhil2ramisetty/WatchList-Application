@@ -15,14 +15,14 @@ class NetworkConnectivity {
     _checkStatus(result);
     _networkConnectivity.onConnectivityChanged.listen((result) {
       _checkStatus(result);
-      _controller.sink.add({result: true});
     });
   }
 
   void _checkStatus(ConnectivityResult result) async {
     bool isOnline = false;
     try {
-      final result = await InternetAddress.lookup('example.com');
+      final result = await InternetAddress.lookup('example.com')
+          .timeout(const Duration(seconds: 5));
       isOnline = result.isNotEmpty && result[0].rawAddress.isNotEmpty;
     } on SocketException catch (_) {
       isOnline = false;

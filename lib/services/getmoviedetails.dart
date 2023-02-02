@@ -31,14 +31,14 @@ class SearchingMovie {
 
   Future<Result> getSearchResult(String element) async {
     try {
+      var decode = await ReadCache.getJson(key: element);
+      Map<String, dynamic> ms = decode;
+      Result movie = Result.fromJson(ms);
+      return movie;
+    } catch (e) {
+      Strings str = Strings(element: element.toString());
+      var url = Uri.parse(str.api3);
       try {
-        var decode = await ReadCache.getJson(key: element);
-        Map<String, dynamic> ms = decode;
-        Result movie = Result.fromJson(ms);
-        return movie;
-      } catch (e) {
-        Strings str = Strings(element: element.toString());
-        var url = Uri.parse(str.api3);
         http.Response res = await http.get(url);
         if (res.statusCode == 200) {
           var decode = jsonDecode(res.body);
@@ -49,12 +49,9 @@ class SearchingMovie {
         } else {
           return Result();
         }
+      } catch (e) {
+        return Result();
       }
-    } catch (e) {
-      var decode = await ReadCache.getJson(key: element);
-      Map<String, dynamic> ms = decode;
-      Result movie = Result.fromJson(ms);
-      return movie;
     }
   }
 }

@@ -42,7 +42,9 @@ class _HomeState extends State<Home> {
       } else if (state is SideNavigationSearch) {
         return SearchPage(ms: state.movieResponse[0]);
       } else {
-        return Container();
+        return Container(
+          decoration: const BoxDecoration(color: Colors.purple),
+        );
       }
     });
   }

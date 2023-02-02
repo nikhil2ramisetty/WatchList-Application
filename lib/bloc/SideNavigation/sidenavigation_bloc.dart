@@ -10,7 +10,8 @@ part 'sidenavigation_state.dart';
 class SideNavigationBloc
     extends Bloc<SideNavigationEvent, SideNavigationState> {
   final Searching search = Searching();
-  SideNavigationBloc() : super(SideNavigationInitialHome(movieResponse: [])) {
+  SideNavigationBloc()
+      : super(SideNavigationInitialHome(movieResponse: const [])) {
     on<PopularPressed>((event, emit) async {
       emit(PageLoading());
       MovieResponse popularResult = await search.getPopularList();

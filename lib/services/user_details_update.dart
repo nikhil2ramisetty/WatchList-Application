@@ -7,11 +7,32 @@ class UserDetailsUpdate {
   Future<void> addWatchLater(String id) async {
     User? user = FirebaseAuth.instance.currentUser;
     if (user != null) {
-      FirebaseFirestore.instance.collection("Nikhil").doc(user.uid).update({
+      await FirebaseFirestore.instance
+          .collection("Nikhil")
+          .doc(user.uid)
+          .update({
         "WatchLater": FieldValue.arrayUnion([id])
       });
     } else {
       throw Exception();
+    }
+  }
+
+  Future<void> removeWatchLater(String id) async {
+    User? user = FirebaseAuth.instance.currentUser;
+    if (user != null) {
+      FirebaseFirestore.instance.collection("Nikhil").doc(user.uid).update({
+        "WatchLater": FieldValue.arrayRemove([id])
+      });
+    }
+  }
+
+  Future<void> removeAlreadyWatched(String id) async {
+    User? user = FirebaseAuth.instance.currentUser;
+    if (user != null) {
+      FirebaseFirestore.instance.collection("Nikhil").doc(user.uid).update({
+        "AlreadyWatched": FieldValue.arrayRemove([id])
+      });
     }
   }
 

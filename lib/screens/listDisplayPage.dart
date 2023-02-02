@@ -3,8 +3,11 @@ import 'package:flutter/painting.dart';
 import 'package:flutter/src/widgets/container.dart';
 import 'package:flutter/src/widgets/framework.dart';
 import 'package:flutter/widgets.dart';
+import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:watchlist/screens/HomePage/AllListDisplay.dart';
 
+import '../bloc/NavigationBloc/navigation_bloc.dart';
+import '../bloc/SideNavigation/sidenavigation_bloc.dart';
 import '../model/movie_response.dart';
 
 class ListDisplayPage extends StatefulWidget {
@@ -18,32 +21,40 @@ class ListDisplayPage extends StatefulWidget {
 class _ListDisplayPageState extends State<ListDisplayPage> {
   @override
   Widget build(BuildContext context) {
-    return Container(
-        padding: const EdgeInsets.all(15),
-        width: 500,
-        height: MediaQuery.of(context).size.height,
-        decoration: const BoxDecoration(color: Color.fromARGB(255, 46, 15, 56)),
-        child: SingleChildScrollView(
-            child: SizedBox(
+    return WillPopScope(
+      onWillPop: () async {
+        BlocProvider.of<NavigationBloc>(context).add(HomeClicked());
+        BlocProvider.of<SideNavigationBloc>(context).add(HomePressed());
+        return false;
+      },
+      child: Container(
+          padding: const EdgeInsets.all(15),
           width: 500,
           height: MediaQuery.of(context).size.height,
-          child: Column(
-              mainAxisAlignment: MainAxisAlignment.center,
-              crossAxisAlignment: CrossAxisAlignment.center,
-              children: <Widget>[
-                Expanded(
-                  child: GridView.count(
-                    childAspectRatio: 0.57,
-                    mainAxisSpacing: 12,
-                    crossAxisCount: 2,
-                    scrollDirection: Axis.vertical,
-                    children: [
-                      ...?widget.ms.results
-                          ?.map((e) => MovieSingleCard(movie: e ?? Result()))
-                    ],
-                  ),
-                )
-              ]),
-        )));
+          decoration:
+              const BoxDecoration(color: Color.fromARGB(255, 46, 15, 56)),
+          child: SingleChildScrollView(
+              child: SizedBox(
+            width: 500,
+            height: MediaQuery.of(context).size.height,
+            child: Column(
+                mainAxisAlignment: MainAxisAlignment.center,
+                crossAxisAlignment: CrossAxisAlignment.center,
+                children: <Widget>[
+                  Expanded(
+                    child: GridView.count(
+                      childAspectRatio: 0.57,
+                      mainAxisSpacing: 12,
+                      crossAxisCount: 2,
+                      scrollDirection: Axis.vertical,
+                      children: [
+                        ...?widget.ms.results
+                            ?.map((e) => MovieSingleCard(movie: e ?? Result()))
+                      ],
+                    ),
+                  )
+                ]),
+          ))),
+    );
   }
 }

@@ -30,7 +30,6 @@ class _AllListsDisplayState extends State<AllListsDisplay> {
         child: SingleChildScrollView(
           child: Column(
             crossAxisAlignment: CrossAxisAlignment.start,
-            // mainAxisSize: MainAxisSize.min,
             children: <Widget>[
               const SizedBox(height: 10),
               const Text(
@@ -154,7 +153,7 @@ class _MovieSingleCardState extends State<MovieSingleCard> {
                         padding: const EdgeInsets.only(top: 3, bottom: 0),
                         child: Text(
                           overflow: TextOverflow.clip,
-                          widget.movie.originalTitle ?? "Hello World",
+                          widget.movie.originalTitle ?? "Not Available",
                           style: const TextStyle(
                               fontSize: 20,
                               fontWeight: FontWeight.w500,
