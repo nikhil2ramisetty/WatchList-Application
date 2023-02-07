@@ -72,11 +72,19 @@ class _MoviesTypeListsState extends State<MoviesTypeLists> {
           } else {
             var userDetails = snapshot.data?.data();
             UserDetails user = UserDetails.fromJson(userDetails!);
-            List<String?>? lis1 = user.alreadyWatched?.toList();
-            List<String?>? lis2 = user.watchLater?.toList();
+            List<String?>? lis1 = user.movies?.toList();
+            List<bool?>? aw = user.alreadyWatched?.toList();
+            List<bool?>? wl = user.watchLater?.toList();
+            if (lis1!.isEmpty) {
+              // debugPrint("&&&&&&&&&&&&&&&&&&&");
+              BlocProvider.of<ListSectionMovieBloc>(context)
+                  .add(MoviesListLoaded(movieLists1: []));
+
+              return MoviesListPageLoggedIn(aw: [], wl: []);
+            }
             BlocProvider.of<ListSectionMovieBloc>(context)
-                .add(MoviesListLoaded(movieLists1: lis1, movieLists2: lis2));
-            return MoviesListPageLoggedIn(lis1: lis1, lis2: lis2);
+                .add(MoviesListLoaded(movieLists1: lis1));
+            return MoviesListPageLoggedIn(aw: aw, wl: wl);
           }
         },
       );
@@ -85,10 +93,9 @@ class _MoviesTypeListsState extends State<MoviesTypeLists> {
 }
 
 class MoviesListPageLoggedIn extends StatefulWidget {
-  const MoviesListPageLoggedIn(
-      {super.key, required this.lis1, required this.lis2});
-  final List<String?>? lis1;
-  final List<String?>? lis2;
+  const MoviesListPageLoggedIn({super.key, required this.aw, required this.wl});
+  final List<bool?>? aw;
+  final List<bool?>? wl;
 
   @override
   State<MoviesListPageLoggedIn> createState() => _MoviesListPageLoggedInState();
@@ -121,38 +128,20 @@ class _MoviesListPageLoggedInState extends State<MoviesListPageLoggedIn> {
                 const SizedBox(
                   height: 20,
                 ),
-                const Text("Already Watched",
-                    style: TextStyle(
-                        fontSize: 30,
-                        fontWeight: FontWeight.w500,
-                        color: Color.fromARGB(255, 221, 194, 235))),
                 const SizedBox(
                   height: 10,
                 ),
                 Flexible(
                   flex: 5,
                   child: VerticalCarousel(
-                    title: "Already Watched",
+                    aw: widget.aw,
+                    wl: widget.wl,
                     movieResponse: state.movieResponse1,
                   ),
                 ),
                 const SizedBox(
                   height: 20,
                 ),
-                const Text("Watch Later",
-                    style: TextStyle(
-                        fontSize: 30,
-                        fontWeight: FontWeight.w500,
-                        color: Color.fromARGB(255, 221, 194, 235))),
-                const SizedBox(
-                  height: 10,
-                ),
-                Flexible(
-                  flex: 5,
-                  child: VerticalCarousel(
-                      movieResponse: state.movieResponse2,
-                      title: "Watch Later"),
-                )
               ],
             ),
           );
@@ -167,10 +156,15 @@ class _MoviesListPageLoggedInState extends State<MoviesListPageLoggedIn> {
 }
 
 class VerticalCarousel extends StatefulWidget {
-  final String title;
   final List<Result> movieResponse;
+  final List<bool?>? aw;
+  final List<bool?>? wl;
+
   const VerticalCarousel(
-      {required this.title, required this.movieResponse, super.key});
+      {required this.aw,
+      required this.wl,
+      required this.movieResponse,
+      super.key});
 
   @override
   State<VerticalCarousel> createState() => _VerticalCarouselState();
@@ -184,7 +178,15 @@ class _VerticalCarouselState extends State<VerticalCarousel> {
       clipBehavior: Clip.hardEdge,
       child: ListView(
         children: [
-          ...widget.movieResponse.map((e) => HorizontalMovieCard(result: e))
+          ...widget.movieResponse
+              .asMap()
+              .entries
+              .map((e) => HorizontalMovieCard(
+                    index: e.key,
+                    result: e.value,
+                    aw: widget.aw,
+                    wl: widget.wl,
+                  ))
         ],
       ),
     );
@@ -192,9 +194,16 @@ class _VerticalCarouselState extends State<VerticalCarousel> {
 }
 
 class HorizontalMovieCard extends StatefulWidget {
-  const HorizontalMovieCard({required this.result, super.key});
+  const HorizontalMovieCard(
+      {required this.index,
+      this.aw,
+      required this.wl,
+      required this.result,
+      super.key});
   final Result result;
-
+  final int index;
+  final List<bool?>? aw;
+  final List<bool?>? wl;
   @override
   State<HorizontalMovieCard> createState() => _HorizontalMovieCardState();
 }
@@ -202,6 +211,19 @@ class HorizontalMovieCard extends StatefulWidget {
 class _HorizontalMovieCardState extends State<HorizontalMovieCard> {
   @override
   Widget build(BuildContext context) {
+    bool? aw;
+    bool? wl;
+
+    if (widget.aw!.isNotEmpty && widget.wl!.isNotEmpty) {
+      try {
+        aw = widget.aw![widget.index];
+        wl = widget.wl![widget.index];
+      } catch (e) {
+        aw = false;
+        wl = false;
+      }
+    }
+
     return Container(
         padding: const EdgeInsets.all(8),
         margin: const EdgeInsets.all(4),
@@ -212,12 +234,22 @@ class _HorizontalMovieCardState extends State<HorizontalMovieCard> {
         child: Row(
           children: [
             CachedNetworkImage(
+                placeholder: (context, url) => Container(
+                      width: 127,
+                      child: const Center(
+                        child: SizedBox(
+                            width: 20,
+                            height: 20,
+                            child: CircularProgressIndicator()),
+                      ),
+                    ),
                 imageUrl:
                     "https://image.tmdb.org/t/p/original${widget.result.posterPath}"),
             const SizedBox(
               width: 10,
             ),
             Flexible(
+              // flex: 8,
               child: Column(
                   mainAxisAlignment: MainAxisAlignment.spaceEvenly,
                   crossAxisAlignment: CrossAxisAlignment.start,
@@ -230,13 +262,44 @@ class _HorizontalMovieCardState extends State<HorizontalMovieCard> {
                               color: Color.fromARGB(255, 221, 194, 235))),
                     ),
                     ToggleButtons(
+                        constraints: BoxConstraints(
+                            maxWidth: MediaQuery.of(context).size.width),
+                        fillColor: Colors.purple,
+                        color: Colors.white,
+                        textStyle: const TextStyle(
+                            fontSize: 14, fontWeight: FontWeight.w600),
                         selectedBorderColor: Colors.white,
-                        selectedColor: Colors.red,
-                        isSelected: const [true, false],
-                        onPressed: ((index) {}),
+                        borderColor: Colors.white,
+                        selectedColor: Colors.white,
+                        isSelected: [wl ?? false, aw ?? false],
+                        onPressed: ((index) {
+                          if (index == 0) {
+                            if (wl != null && wl) {
+                              UserDetailsUpdate().removeWatchLater(
+                                  widget.result.id.toString());
+                            } else if (wl != null && !wl) {
+                              UserDetailsUpdate()
+                                  .addWatchLater(widget.result.id.toString());
+                            }
+                          } else {
+                            if (aw != null && aw) {
+                              UserDetailsUpdate().removeAlreadyWatched(
+                                  widget.result.id.toString());
+                            } else {
+                              UserDetailsUpdate().addAlreadyWatched(
+                                  widget.result.id.toString());
+                            }
+                          }
+                        }),
                         children: const [
-                          Text("Watch Later"),
-                          Text("Already Watched")
+                          Padding(
+                            padding: EdgeInsets.all(8.0),
+                            child: Text("Watch Later"),
+                          ),
+                          Padding(
+                            padding: EdgeInsets.all(8.0),
+                            child: Text("Already Watched"),
+                          )
                         ])
                   ]),
             ),
@@ -245,76 +308,27 @@ class _HorizontalMovieCardState extends State<HorizontalMovieCard> {
   }
 }
 
-class SideCarousel extends StatefulWidget {
-  const SideCarousel(
-      {super.key, required this.movieResponse1, required this.title});
-  final List<Result> movieResponse1;
-  final String title;
-  @override
-  State<SideCarousel> createState() => _SideCarouselState();
-}
-
-class _SideCarouselState extends State<SideCarousel> {
-  @override
-  Widget build(BuildContext context) {
-    return Container(
-      padding: const EdgeInsets.all(6),
-      child: Column(crossAxisAlignment: CrossAxisAlignment.start, children: [
-        const SizedBox(height: 10),
-        Flexible(
-          flex: 1,
-          child: Text(
-            widget.title,
-            style: const TextStyle(
-                fontSize: 25,
-                fontWeight: FontWeight.w500,
-                color: Color.fromARGB(255, 221, 194, 235)),
-          ),
-        ),
-        const SizedBox(height: 10),
-        Flexible(
-          flex: 9,
-          child: SizedBox(
-              height: 300.0,
-              child: ListView(
-                // physics: const ClampingScrollPhysics(),
-                // shrinkWrap: true,
-                scrollDirection: Axis.horizontal,
-                children: [
-                  ...widget.movieResponse1.map((e) => InkWell(
-                      onLongPress: () {
-                        _popupDialog(context, widget.title, e.id.toString());
-                      },
-                      child: MovieSingleCard(movie: e)))
-                ],
-              )),
-        ),
-      ]),
-    );
-  }
-
-  void _popupDialog(BuildContext context, String str, String eid) {
-    showDialog(
-        context: context,
-        builder: (context) {
-          return AlertDialog(
-            title: const Text('Delete ?'),
-            actions: <Widget>[
-              ElevatedButton(
-                  onPressed: () => Navigator.of(context).pop(),
-                  child: const Text('CANCEL')),
-              ElevatedButton(
-                  onPressed: () {
-                    if (str == "Watch Later") {
-                      UserDetailsUpdate().removeWatchLater(eid);
-                    } else if (str == "Already Watched") {
-                      UserDetailsUpdate().removeAlreadyWatched(eid);
-                    }
-                    Navigator.of(context).pop();
-                  },
-                  child: const Text('DELETE')),
-            ],
-          );
-        });
-  }
+void _popupDialog(BuildContext context, String str, String eid) {
+  showDialog(
+      context: context,
+      builder: (context) {
+        return AlertDialog(
+          title: const Text('Delete ?'),
+          actions: <Widget>[
+            ElevatedButton(
+                onPressed: () => Navigator.of(context).pop(),
+                child: const Text('CANCEL')),
+            ElevatedButton(
+                onPressed: () {
+                  if (str == "Watch Later") {
+                    UserDetailsUpdate().removeWatchLater(eid);
+                  } else if (str == "Already Watched") {
+                    UserDetailsUpdate().removeAlreadyWatched(eid);
+                  }
+                  Navigator.of(context).pop();
+                },
+                child: const Text('DELETE')),
+          ],
+        );
+      });
 }

@@ -17,7 +17,7 @@ class _LoginScreenState extends State<LoginScreen> {
   Future createUserStorage() async {
     String uid = FirebaseAuth.instance.currentUser!.uid;
     final doc = FirebaseFirestore.instance.collection('Nikhil').doc(uid);
-    final json = {"AlreadyWatched": [], "WatchLater": []};
+    final json = {"Movies": [], "Watch Later": [], "Already Watched": []};
     await doc.set(json);
   }
 

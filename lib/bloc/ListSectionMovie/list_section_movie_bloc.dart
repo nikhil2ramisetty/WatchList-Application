@@ -15,10 +15,7 @@ class ListSectionMovieBloc
       Searching search = Searching();
       List<Result> movieResponse1 =
           await search.getTotalResults(event.movieLists1);
-      List<Result> movieResponse2 =
-          await search.getTotalResults(event.movieLists2);
-      emit(ListSectionMovieLoaded(
-          movieResponse1: movieResponse1, movieResponse2: movieResponse2));
+      emit(ListSectionMovieLoaded(movieResponse1: movieResponse1));
     });
   }
 }

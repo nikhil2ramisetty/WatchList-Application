@@ -1,6 +1,7 @@
 import 'dart:async';
 import 'package:cache_manager/cache_manager.dart';
 import 'package:cached_network_image/cached_network_image.dart';
+import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:connectivity_plus/connectivity_plus.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/material.dart';
@@ -9,6 +10,7 @@ import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:watchlist/bloc/InternetBloc/internet_bloc.dart';
 import 'package:watchlist/bloc/ListSectionMovie/list_section_movie_bloc.dart';
 import 'package:watchlist/bloc/SideNavigation/sidenavigation_bloc.dart';
+import 'package:watchlist/model/userDetails.dart';
 import 'package:watchlist/networkConnectivity.dart';
 import 'package:watchlist/screens/AccountPage/account.dart';
 import 'package:watchlist/screens/HomePage/home.dart';
@@ -185,18 +187,42 @@ class _MyHomePageState extends State<MyHomePage> {
               ),
               actions: [
                 if (snapshot.hasData)
-                  InkWell(
-                      onTap: () {
-                        BlocProvider.of<NavigationBloc>(context)
-                            .add(AccountClicked());
-                      },
-                      child: CachedNetworkImage(
-                        width: 28,
-                        errorWidget: ((context, url, error) =>
-                            const Icon(Icons.abc_outlined)),
-                        imageUrl:
-                            "https://upload.wikimedia.org/wikipedia/commons/thumb/2/2c/Default_pfp.svg/1200px-Default_pfp.svg.png",
-                      ))
+                  Padding(
+                    padding: const EdgeInsets.symmetric(vertical: 8.0),
+                    child: InkWell(
+                        onTap: () {
+                          BlocProvider.of<NavigationBloc>(context)
+                              .add(AccountClicked());
+                        },
+                        child: StreamBuilder<dynamic>(
+                            stream: FirebaseFirestore.instance
+                                .collection("Nikhil")
+                                .doc(snapshot.data?.uid)
+                                .snapshots(),
+                            builder: (context, snapshot) {
+                              String? url;
+                              if (!snapshot.hasData) {
+                                url =
+                                    "https://upload.wikimedia.org/wikipedia/commons/thumb/2/2c/Default_pfp.svg/1200px-Default_pfp.svg.png";
+                              } else {
+                                var json = snapshot.data.data();
+                                UserDetails user = UserDetails.fromJson(json);
+                                url = user.profilePic;
+                              }
+                              return Container(
+                                width: 40,
+                                clipBehavior: Clip.hardEdge,
+                                decoration: BoxDecoration(
+                                    borderRadius: BorderRadius.circular(1000)),
+                                child: CachedNetworkImage(
+                                    fit: BoxFit.fill,
+                                    errorWidget: ((context, url, error) =>
+                                        const Icon(Icons.abc_outlined)),
+                                    imageUrl: url ??
+                                        "https://upload.wikimedia.org/wikipedia/commons/thumb/2/2c/Default_pfp.svg/1200px-Default_pfp.svg.png"),
+                              );
+                            })),
+                  )
                 else
                   Container(),
                 const SizedBox(

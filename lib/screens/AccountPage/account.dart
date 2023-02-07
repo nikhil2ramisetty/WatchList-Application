@@ -53,9 +53,9 @@ class _AccountLoggedInState extends State<AccountLoggedIn> {
     var storage = FirebaseStorage.instance;
     var img = await picker.pickImage(source: media);
     var path = img?.path;
-    var img_name = img!.name;
+    var imgName = img!.name;
     var file = File(img.path);
-    TaskSnapshot tsk = await storage.ref('$path/$img_name').putFile(file);
+    TaskSnapshot tsk = await storage.ref('$path/$imgName').putFile(file);
     final String downloadUrl = await tsk.ref.getDownloadURL();
     FirebaseFirestore.instance
         .collection("Nikhil")
@@ -79,7 +79,7 @@ class _AccountLoggedInState extends State<AccountLoggedIn> {
           }
           var userDetails = snapshot.data.data();
           UserDetails user = UserDetails.fromJson(userDetails);
-          String? url = user.url;
+          String? url = user.profilePic;
           return Container(
             margin: const EdgeInsets.only(left: 20, right: 20),
             child: Column(

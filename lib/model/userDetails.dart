@@ -1,22 +1,25 @@
 class UserDetails {
-  List<String>? alreadyWatched;
-  List<String>? watchLater;
-  String? url;
+  List<bool>? alreadyWatched;
+  List<bool>? watchLater;
+  String? profilePic;
+  List<String>? movies;
 
-  UserDetails({this.alreadyWatched, this.watchLater, this.url});
+  UserDetails(
+      {this.alreadyWatched, this.watchLater, this.profilePic, this.movies});
 
   UserDetails.fromJson(Map<String, dynamic> json) {
-    alreadyWatched = json['AlreadyWatched'].cast<String>();
-    watchLater = json['WatchLater'].cast<String>();
-    url = json["ProfilePic"];
+    alreadyWatched = json['Already Watched'].cast<bool>();
+    watchLater = json['Watch Later'].cast<bool>();
+    profilePic = json['ProfilePic'];
+    movies = json['Movies'].cast<String>();
   }
 
-  get AlreadyWatched => null;
-
   Map<String, dynamic> toJson() {
-    final Map<String, dynamic> data = <String, dynamic>{};
-    data['AlreadyWatched'] = alreadyWatched;
-    data['WatchLater'] = watchLater;
+    final Map<String, dynamic> data = new Map<String, dynamic>();
+    data['Already Watched'] = this.alreadyWatched;
+    data['Watch Later'] = this.watchLater;
+    data['ProfilePic'] = this.profilePic;
+    data['Movies'] = this.movies;
     return data;
   }
 }
