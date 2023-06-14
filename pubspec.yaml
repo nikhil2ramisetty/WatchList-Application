@@ -46,6 +46,8 @@ dependencies:
   cache_manager: ^1.0.0+4
   image_picker: ^0.8.6+1
   firebase_storage: ^11.0.10
+  dwds: ^16.0.3
+  firebase_core: ^2.4.1
 
 
 dev_dependencies:

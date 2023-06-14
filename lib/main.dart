@@ -7,6 +7,7 @@ import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
+import 'package:firebase_core/firebase_core.dart';
 import 'package:watchlist/bloc/InternetBloc/internet_bloc.dart';
 import 'package:watchlist/bloc/ListSectionMovie/list_section_movie_bloc.dart';
 import 'package:watchlist/bloc/SideNavigation/sidenavigation_bloc.dart';
@@ -16,17 +17,16 @@ import 'package:watchlist/screens/AccountPage/account.dart';
 import 'package:watchlist/screens/HomePage/home.dart';
 import 'package:watchlist/screens/SideMenu.dart';
 import 'package:watchlist/screens/MoviesPage/movies.dart';
-// ignore: depend_on_referenced_packages
-import 'package:firebase_core/firebase_core.dart';
 import 'package:watchlist/services/getmoviedetails.dart';
 import 'bloc/MovieTappedOnHomeBloc/movietap_bloc.dart';
 import 'bloc/NavigationBloc/navigation_bloc.dart';
 import 'model/movie_response.dart';
 import 'services/getSearch.dart';
+import 'firebase_options.dart';
 
 Future main() async {
   WidgetsFlutterBinding.ensureInitialized();
-  await Firebase.initializeApp();
+  await Firebase.initializeApp(options: DefaultFirebaseOptions.currentPlatform);
   Searching hs = Searching();
   List<MovieResponse> ms = await hs.getHomePage();
   SystemChrome.setPreferredOrientations([DeviceOrientation.portraitUp])
@@ -230,18 +230,21 @@ class _MyHomePageState extends State<MyHomePage> {
                 )
               ],
             ),
-            body: BlocBuilder<NavigationBloc, NavigationState>(
-              builder: (context, state) {
-                if (state is NavigationHome) {
-                  return Home(ms: widget.ms);
-                } else if (state is NavigationMovies) {
-                  return const Movies();
-                } else if (state is NavigationAccount) {
-                  return const Account();
-                } else {
-                  throw Exception();
-                }
-              },
+            body: SizedBox(
+              width: MediaQuery.of(context).size.width,
+              child: BlocBuilder<NavigationBloc, NavigationState>(
+                builder: (context, state) {
+                  if (state is NavigationHome) {
+                    return Home(ms: widget.ms);
+                  } else if (state is NavigationMovies) {
+                    return const Movies();
+                  } else if (state is NavigationAccount) {
+                    return const Account();
+                  } else {
+                    throw Exception();
+                  }
+                },
+              ),
             ),
             bottomNavigationBar: BlocBuilder<NavigationBloc, NavigationState>(
               builder: (context, state) {
