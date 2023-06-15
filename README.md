@@ -1,6 +1,6 @@
 ### watchlist
 
-##Please download the APK file of the application, from app-release.apk
+###Please download the APK file of the application, from app-release.apk
 
 ## Getting Started
 
