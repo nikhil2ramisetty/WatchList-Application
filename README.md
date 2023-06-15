@@ -1,6 +1,6 @@
-# watchlist
+### watchlist
 
-A new Flutter project.
+##Please download the APK file of the application, from app-release.apk
 
 ## Getting Started
 
